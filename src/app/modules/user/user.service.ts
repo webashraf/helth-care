@@ -1,29 +1,46 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../../../app";
-import { UserRole } from "../../../generated/prisma";
+import { USER_ROLE } from "../../../generated/prisma";
+
+import { PrismaClient } from "@prisma/client";
 
 const createAdmin = async (data: any) => {
-  const hashPassword = await bcrypt.hash(data.password, 12);
+  try {
+    const hashPassword = await bcrypt.hash(data.password, 12);
+    const userData = {
+      name: data.admin.name,
+      email: data.admin.email,
+      password: hashPassword,
+      role: USER_ROLE.ADMIN,
+    };
 
-  const userData = {
-    name: data.admin.name,
-    email: data.admin.email,
-    password: hashPassword,
-    role: UserRole.ADMIN,
-  };
+    const result = await prisma.$transaction(
+      async (traClient: PrismaClient) => {
+        const user = await traClient.user.create({ data: userData });
+        console.log(
+          "🚀 ~ createAdmin ~ userData:",
 
-  const result = await prisma.$transaction(async (transectionClient: any) => {
-    await transectionClient.user.create({
-      data: userData,
-    });
-    const createdAdmin = await transectionClient.admin.create({
-      data: data.admin,
-    });
+          {
+            ...data.admin,
+            userId: user.id,
+          }
+        );
+        const createdAdmin = await traClient.admin.create({
+          data: {
+            ...data.admin,
+          },
+        });
+        return createdAdmin;
+      }
+    );
 
-    return createdAdmin;
-  });
-
-  return result;
+    return result;
+  } catch (error: any) {
+    console.error("PrismaClientUnknownRequestError:", error.message);
+    console.error("Client version:", error.clientVersion);
+    console.error(error);
+    throw error;
+  }
 };
 
 export const user_service = {

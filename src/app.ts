@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import { admin_routes } from "./app/modules/admin/admin.routes";
 import { user_routes } from "./app/modules/user/user.routes";
+import { PrismaClient } from "./generated/prisma";
 
 export const prisma = new PrismaClient();
 const app: Application = express();
