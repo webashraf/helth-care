@@ -1,0 +1,2 @@
+DATABASE_URL="postgresql://postgres:654321tam@localhost:5432/ph_health_care2?schema=public"
+PORT=3000
